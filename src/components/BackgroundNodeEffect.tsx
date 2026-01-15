@@ -146,7 +146,7 @@ const BackgroundNodeEffect = () => {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 z-0 pointer-events-none"
+            className="fixed top-0 left-0 w-full h-[100vh] z-[-1] pointer-events-none"
         />
     );
 };

@@ -132,7 +132,7 @@ const UploadButton = () => {
     let content = (
         <>
             <Upload className="w-5 h-5 stroke-2" />
-            <span className="tracking-wide">Upload Smartsort™</span>
+            <span className="tracking-wide">Upload SmartSort™</span>
         </>
     );
 
@@ -174,10 +174,20 @@ const UploadButton = () => {
             <button
                 onClick={handleClick}
                 disabled={isUploading}
-                className={`${baseClasses} ${stateClasses}`}
-                aria-label="Upload Smartsort"
+                className={`${baseClasses} ${stateClasses} overflow-hidden`}
+                aria-label="Upload SmartSort"
             >
-                {content}
+                {/* Progress Bar Background */}
+                {isUploading && (
+                    <div
+                        className="absolute left-0 bottom-0 h-full bg-white/20 transition-all duration-300 ease-out"
+                        style={{ width: `${(completedCount / totalFiles) * 100}%` }}
+                    />
+                )}
+
+                <div className="relative flex items-center gap-3 z-10">
+                    {content}
+                </div>
             </button>
         </div>
     );

@@ -6,8 +6,7 @@ function App() {
         <div className="relative w-full h-screen overflow-hidden flex flex-col items-center justify-center p-6">
             <BackgroundNodeEffect />
 
-            {/* Cinematic Glow Overlay */}
-            <div className="fixed inset-0 pointer-events-none z-[5] shadow-[inset_0_0_80px_30px_rgba(56,189,248,0.25)]"></div>
+
 
             <main className="z-10 flex flex-col items-center justify-center gap-16 w-full max-w-md animate-fade-in-up">
                 <div className="flex flex-col items-center gap-4">
