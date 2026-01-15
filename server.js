@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+app.use(cors()); // Allow all connections for Render
 
 // Configure Multer (Temp storage)
 // Ensure uploads directory exists or let multer handle it
@@ -62,4 +62,5 @@ app.post('/upload', upload.array('photos'), async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));

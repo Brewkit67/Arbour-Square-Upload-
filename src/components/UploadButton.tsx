@@ -99,7 +99,7 @@ const UploadButton = () => {
 
         try {
             // Server is now on port 3000 and route is /upload
-            const response = await fetch('http://localhost:3000/upload', {
+            const response = await fetch('https://arbour-square-upload.onrender.com/upload', {
                 method: 'POST',
                 body: formData,
             });
