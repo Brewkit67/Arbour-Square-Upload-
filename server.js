@@ -61,6 +61,17 @@ app.post('/upload', upload.array('photos'), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+app.get('/upload', (req, res) => {
+    res.status(405).send('Method Not Allowed: Use POST');
+});
 
+// Serve Frontend (Must be after API routes)
+const distPath = path.join(__dirname, 'dist');
+app.use(express.static(distPath));
+
+// Catch-all handler for React Routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+});
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
