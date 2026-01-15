@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 
 const BackgroundNodeEffect = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const mouseRef = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -54,19 +53,15 @@ const BackgroundNodeEffect = () => {
                 }
             }
 
-            draw(mouseX: number, mouseY: number) {
+            draw() {
                 if (!ctx || !canvas) return;
 
                 // Perspective projection
                 const fov = 600;
                 const scale = fov / (fov + this.z);
 
-                // Parallax offset
-                const parallaxX = (mouseX - canvas.width / 2) * (scale * 0.1);
-                const parallaxY = (mouseY - canvas.height / 2) * (scale * 0.1);
-
-                const x2d = canvas.width / 2 + this.x * scale + parallaxX;
-                const y2d = canvas.height / 2 + this.y * scale + parallaxY;
+                const x2d = canvas.width / 2 + this.x * scale;
+                const y2d = canvas.height / 2 + this.y * scale;
 
                 const size = this.baseSize * scale;
                 const opacity = Math.min(1, scale * scale * 0.5); // Fade out in distance
@@ -92,15 +87,12 @@ const BackgroundNodeEffect = () => {
             if (!ctx || !canvas) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Target Parallax smoother
-            // We read from mouseRef directly in draw for simplicity of this effect
-
             const particlePositions: { x: number, y: number, z: number, opacity: number }[] = [];
 
             // Update and draw particles
             particles.forEach(particle => {
                 particle.update();
-                const pos = particle.draw(mouseRef.current.x, mouseRef.current.y);
+                const pos = particle.draw();
                 if (pos) particlePositions.push(pos);
             });
 
@@ -141,22 +133,12 @@ const BackgroundNodeEffect = () => {
             }
         };
 
-        const handleMouseMove = (e: MouseEvent) => {
-            mouseRef.current = { x: e.clientX, y: e.clientY };
-        };
-
         window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('mousemove', handleMouseMove);
-
-        // Initial center
-        mouseRef.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-
         resizeCanvas();
         animate();
 
         return () => {
             window.removeEventListener('resize', resizeCanvas);
-            window.removeEventListener('mousemove', handleMouseMove);
             cancelAnimationFrame(animationFrameId);
         };
     }, []);
