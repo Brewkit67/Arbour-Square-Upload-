@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #3841F3;
+  /* Radial vignette */
+  background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
+  color: white;
+  overflow: hidden;
+}
