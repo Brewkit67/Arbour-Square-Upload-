@@ -6,72 +6,75 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Fix for __dirname in ES modules
+// 1. Fix Directory Paths for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// 2. Ensure 'uploads' folder exists (Fixes the 500 Error)
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+    console.log('Created missing uploads folder');
+}
+
 const app = express();
-app.use(cors()); // Allow all connections for Render
+app.use(cors());
 
-// Configure Multer (Temp storage)
-// Ensure uploads directory exists or let multer handle it
-const upload = multer({ dest: 'uploads/' });
+// 3. Configure Multer to use the safe folder
+const upload = multer({ dest: uploadDir });
 
-// 1. Authenticate (Service Account)
+// 4. Auth (Logs success/failure to helping debugging)
+const keyPath = path.join(__dirname, 'credentials.json');
+if (!fs.existsSync(keyPath)) {
+    console.error('CRITICAL ERROR: credentials.json not found at', keyPath);
+}
+
 const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(__dirname, 'credentials.json'),
+    keyFile: keyPath,
     scopes: ['https://www.googleapis.com/auth/drive'],
 });
-
-// 2. Drive Client
 const drive = google.drive({ version: 'v3', auth });
 
-// 3. Upload Route
-app.post('/upload', upload.array('photos'), async (req, res) => {
-    console.log('Received upload request:', req.files.length, 'files');
+// 5. Serve the Website (Fixes "Not Found")
+app.use(express.static(path.join(__dirname, 'dist')));
 
+// 6. Upload Route
+app.post('/upload', upload.array('photos'), async (req, res) => {
+    console.log('Start upload...');
     try {
         const uploadedFiles = [];
-
         for (const file of req.files) {
+            console.log(`Processing ${file.originalname}`);
             const response = await drive.files.create({
                 requestBody: {
                     name: file.originalname,
-                    parents: ['17SN0ojnJ7u6us0UaGRGfa6pbohrUjrjR'], // Target Folder
+                    parents: ['17SN0ojnJ7u6us0UaGRGfa6pbohrUjrjR'],
                 },
                 media: {
                     mimeType: file.mimetype,
                     body: fs.createReadStream(file.path),
                 },
-                supportsAllDrives: true, // CRITICAL for Shared Drives
+                supportsAllDrives: true,
             });
-
-            // Clean up local file
-            try {
-                fs.unlinkSync(file.path);
-            } catch (e) {
-                console.error("Failed to delete temp file:", e);
-            }
+            fs.unlinkSync(file.path); // Clean up
             uploadedFiles.push(response.data);
         }
-        console.log('Upload success!');
         res.json({ success: true, files: uploadedFiles });
     } catch (error) {
-        console.error('UPLOAD ERROR:', error);
+        console.error('Upload Failed:', error);
         res.status(500).json({ error: error.message });
     }
 });
-app.get('/upload', (req, res) => {
-    res.status(405).send('Method Not Allowed: Use POST');
-});
 
-// Serve Frontend (Must be after API routes)
-const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath));
-
-// Catch-all handler for React Routing
+// 7. Catch-all route for the website
 app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+    const indexFile = path.join(__dirname, 'dist', 'index.html');
+    if (fs.existsSync(indexFile)) {
+        res.sendFile(indexFile);
+    } else {
+        res.status(404).send('Site is building... please wait 1 minute and refresh.');
+    }
 });
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
